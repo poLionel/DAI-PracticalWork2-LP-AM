@@ -14,6 +14,7 @@ public class GameServer {
     private static  final int MAX_THREADS_COUNT = 10;
     private final Logger logger = Logger.getInstance();
     private final int port;
+    private boolean askedForClosing;
 
     public GameServer() {
         this.port = DEFAULT_PORT;
@@ -28,7 +29,7 @@ public class GameServer {
         ExecutorService executor = null;
         try(ServerSocket serverSocket = new ServerSocket(port)) {
             executor = Executors.newFixedThreadPool(MAX_THREADS_COUNT);
-            while (true) {
+            while (!askedForClosing) {
                 Socket clientSocket = serverSocket.accept();
                 executor.submit(new ClientHandler(clientSocket));
             }
@@ -40,5 +41,9 @@ public class GameServer {
             if(executor != null) executor.shutdown();
             logger.log(String.format("Released resources and shutting down server"), this, LogLevel.Information);
         }
+    }
+
+    public void ShutdownServer() {
+        askedForClosing = true;
     }
 }

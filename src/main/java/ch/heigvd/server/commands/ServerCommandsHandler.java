@@ -1,6 +1,7 @@
 package ch.heigvd.server.commands;
 
 import ch.heigvd.shared.commands.Command;
+import ch.heigvd.shared.commands.InvalidCommandData;
 
 public class ServerCommandsHandler {
     public static Command handle(Command command) {
@@ -9,7 +10,8 @@ public class ServerCommandsHandler {
 
         switch (command.type)
         {
-            case InvalidCommand -> {}
+            case InvalidCommand:
+                InvalidCommandData data = (InvalidCommandData)command.value;
         }
 
         return outputCommand;
