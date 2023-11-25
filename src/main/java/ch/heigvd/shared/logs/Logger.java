@@ -1,22 +1,27 @@
 package ch.heigvd.shared.logs;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class Logger {
-    private static Logger instance;
-    private Logger() { }
-    public static synchronized Logger getInstance() {
-        if(instance == null) instance = new Logger();
-        return instance;
-    }
 
-    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm ss.mmm");
+    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("HH:mm ss.SSS");
+
     public void log(String message, Object sender) {
         log(message, sender, LogLevel.Information);
     }
-    public void log(String message, Object sender, LogLevel logLevel) {
-        String output = String.format("[%s@%s | %s | %s]\n",
-                logLevel, simpleDateFormat.format(LocalDateTime.now()), sender.getClass(), message);
+
+    public static void log(String message, LogLevel logLevel) {
+
+        String output = String.format("[%s @ %s | %s]",
+                logLevel, dateFormatter.format(LocalDateTime.now()),  message);
+
+        System.out.println(output);
+    }
+
+    public static void log(String message, Object sender, LogLevel logLevel) {
+
+        String output = String.format("[%s @ %s | %s | %s]",
+                logLevel, dateFormatter.format(LocalDateTime.now()), sender.getClass().getSimpleName(), message);
 
         System.out.println(output);
     }

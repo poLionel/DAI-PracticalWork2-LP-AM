@@ -11,8 +11,7 @@ import java.util.concurrent.Executors;
 
 public class GameServer {
     public static final int DEFAULT_PORT = 5187;
-    private static  final int MAX_THREADS_COUNT = 10;
-    private final Logger logger = Logger.getInstance();
+    private static final int MAX_THREADS_COUNT = 10;
     private final int port;
     private boolean askedForClosing;
 
@@ -23,27 +22,32 @@ public class GameServer {
         this.port = port;
     }
 
-    public void StartServer() {
-        logger.log(String.format("Starting server on port %s", port), this, LogLevel.Information);
+    public void start() {
 
+        Logger.log(String.format("Starting server on port %s", port), this, LogLevel.Information);
         ExecutorService executor = null;
-        try(ServerSocket serverSocket = new ServerSocket(port)) {
+
+        try(
+                ServerSocket serverSocket = new ServerSocket(port);
+        ) {
             executor = Executors.newFixedThreadPool(MAX_THREADS_COUNT);
+
             while (!askedForClosing) {
                 Socket clientSocket = serverSocket.accept();
                 executor.submit(new ClientHandler(clientSocket));
             }
         }
         catch (IOException exception) {
-            logger.log(String.format("Handled error : %s", exception.getMessage()), this, LogLevel.Error);
+            Logger.log(String.format("Handled error : %s", exception.getMessage()), this, LogLevel.Error);
         }
         finally {
             if(executor != null) executor.shutdown();
-            logger.log(String.format("Released resources and shutting down server"), this, LogLevel.Information);
+            Logger.log("Shutting down server", this, LogLevel.Information);
+            askedForClosing = false;
         }
     }
 
-    public void ShutdownServer() {
+    public void shutdown() {
         askedForClosing = true;
     }
 }
