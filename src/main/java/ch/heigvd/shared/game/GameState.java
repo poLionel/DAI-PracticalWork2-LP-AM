@@ -7,18 +7,38 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Represents the rules of the game.
+ */
 public class GameState implements Serializable {
+
+    /** The maximum player in the game. */
     public static final int MAX_PLAYER_COUNT = 2;
+
+    /** A list of the player. */
     private final List<PlayerState> players = Collections.synchronizedList(new ArrayList<>());
 
+    /** The grid of the game. */
     private final char[][] game = new char[6][7];
 
+    /** the player that has to play.*/
     private String playerToPlay;
 
+    /**The display of the token for the player 1 */
     private final char player_1 = 'X';
+
+    /** The display of the token for the player 2 */
     private final char player_2 = 'O';
+
+    /** THe display of an empty case. */
     private final char emptyCase = ' ';
 
+    /**
+     * Adds a player to the array of player.
+     *
+     * @param ID the ID of the added player.
+     * @return true if the player was added.
+     */
     public synchronized boolean addPlayer(String ID) {
         if(ID == null) return false;
         boolean canAddPlayer = canAddPlayer();
@@ -29,6 +49,12 @@ public class GameState implements Serializable {
         return canAddPlayer;
     }
 
+    /**
+     * Removes a player in the array of players.
+     *
+     * @param ID the ID of the removed player.
+     * @return true if the player was removed.
+     */
     public synchronized boolean removePlayer(String ID) {
         if(ID == null) return false;
         boolean canRemovePlayer = canRemovePlayer();
@@ -41,24 +67,51 @@ public class GameState implements Serializable {
         return false;
     }
 
+    /**
+     * Gets the players connected to the game.
+     *
+     * @return an array of the players.
+     */
     public PlayerState[] getPlayers() {
         PlayerState[] copy = new PlayerState[players.size()];
         players.toArray(copy);
         return copy;
     }
 
+    /**
+     * Checks if the game can add a player.
+     *
+     * @return true if the game can add a player.
+     */
     public boolean canAddPlayer() {
         return players.size() < MAX_PLAYER_COUNT;
     }
 
+    /**
+     * Checks if the game can remove a player.
+     *
+     * @return true if the game can remove a player.
+     */
     public boolean canRemovePlayer() {
         return !players.isEmpty();
     }
 
+    /**
+     * todo
+     *
+     * @param playerID
+     * @return
+     */
     public boolean containsPlayer(String playerID) {
         return getPlayerWithID(playerID) != null;
     }
 
+    /**
+     * todo
+     *
+     * @param ID
+     * @return
+     */
     private synchronized PlayerState getPlayerWithID(String ID) {
         if(ID == null) return null;
         for (PlayerState player : players)
@@ -66,6 +119,12 @@ public class GameState implements Serializable {
         return null;
     }
 
+    /**
+     * Checks if the player can play.
+     *
+     * @param ID the ID of the player.
+     * @return true if the player can play.
+     */
     public synchronized boolean canPlay(String ID){
         if(ID != null && players.size() == 2 && ID.equals(playerToPlay))
             return true;
@@ -73,6 +132,13 @@ public class GameState implements Serializable {
         return false;
     }
 
+    /**
+     * Checks if the player move is valid.
+     *
+     * @param column the column where the player wants to play.
+     * @param player the player
+     * @return true if the move is valid.
+     */
     public synchronized boolean validPosition(int column, String player){
         boolean isValidMove = false;
 
