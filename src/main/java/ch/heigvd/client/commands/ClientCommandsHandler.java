@@ -56,7 +56,14 @@ public class ClientCommandsHandler {
     }
 
     private Command HandleUpdateCommand(UpdateCommandData data) {
-        gameUI.displayGameState(data.gameState());
+        gameState = data.gameState();
+        if(gameState.canPlay(virtualClient.getClientID()))
+        {
+            int position = gameUI.getPosition();
+            Logger.log("Le joueur peut jouer", LogLevel.Information);
+            return CommandFactory.PlaceCommand(position);
+        }
+
         return null;
     }
 

@@ -24,8 +24,8 @@ public class CommandFactory {
         return new Command(CommandType.Update, new UpdateCommandData(gameState));
     }
 
-    public static Command PlaceCommand() {
-        return new Command(CommandType.Place, new PlaceCommandData());
+    public static Command PlaceCommand(int position) {
+        return new Command(CommandType.Place, new PlaceCommandData(position));
     }
 
     public static Command FFCommand() {

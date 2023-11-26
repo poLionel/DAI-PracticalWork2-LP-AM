@@ -61,7 +61,10 @@ public class ServerCommandsHandler {
     }
 
     private Command HandlePlaceCommand(PlaceCommandData data) {
-        return null;
+
+        return serverStorage.getGameState().validPosition(data.position(), virtualClient.getClientID())
+                ? CommandFactory.PlaceCommand(data.position())
+                : CommandFactory.RefuseCommand("Invalid Position");
     }
 
     private Command HandleFFCommand(FFCommandData data) {
