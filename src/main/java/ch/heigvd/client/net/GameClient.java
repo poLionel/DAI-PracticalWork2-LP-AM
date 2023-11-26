@@ -1,6 +1,7 @@
 package ch.heigvd.client.net;
 
 import ch.heigvd.client.commands.ClientCommandsHandler;
+import ch.heigvd.shared.abstractions.VirtualClient;
 import ch.heigvd.shared.abstractions.VirtualEndpoint;
 import ch.heigvd.shared.commands.Command;
 import ch.heigvd.shared.logs.LogLevel;
@@ -11,7 +12,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class GameClient implements VirtualEndpoint {
+public class GameClient implements VirtualClient {
     public static final int DEFAULT_PORT = 5187;
     private final int port;
     private final String address;
@@ -93,5 +94,15 @@ public class GameClient implements VirtualEndpoint {
             Logger.log(String.format("Unable to send command : %s", ex.getMessage()), this, LogLevel.Error);
             return false;
         }
+    }
+
+    @Override
+    public String getClientID() {
+        return this.clientID;
+    }
+
+    @Override
+    public void setClientID(String clientID) {
+        this.clientID = clientID;
     }
 }

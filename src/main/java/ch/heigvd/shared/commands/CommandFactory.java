@@ -12,8 +12,8 @@ public class CommandFactory {
         return new Command(CommandType.Join, new JoinCommandData());
     }
 
-    public static Command AcceptCommand() {
-        return new Command(CommandType.Accept, new AcceptCommandData());
+    public static Command AcceptCommand(String clientID) {
+        return new Command(CommandType.Accept, new AcceptCommandData(clientID));
     }
 
     public static Command RefuseCommand(String message) {

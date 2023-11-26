@@ -52,7 +52,7 @@ public class ServerCommandsHandler {
 
             // Finally notify the clients and return an accept command
             serverStorage.notifyClients();
-            return CommandFactory.AcceptCommand();
+            return CommandFactory.AcceptCommand(clientID);
         }
         else {
             // Cannot add player to the game, return a refuse command
@@ -69,8 +69,9 @@ public class ServerCommandsHandler {
     }
 
     private Command HandleQuitCommand(QuitCommandData data) {
+        String clientID = virtualClient.getClientID();
         serverStorage.unsubscribeClient(virtualClient);
-        serverStorage.getGameState().removePlayer(virtualClient.getClientID());
-        return CommandFactory.AcceptCommand();
+        serverStorage.getGameState().removePlayer(clientID);
+        return CommandFactory.AcceptCommand(clientID);
     }
 }
