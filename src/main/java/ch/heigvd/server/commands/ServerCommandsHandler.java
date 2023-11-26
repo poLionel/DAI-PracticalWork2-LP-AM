@@ -51,8 +51,9 @@ public class ServerCommandsHandler {
             gameState.addPlayer(clientID);
 
             // Finally notify the clients and return an accept command
+            virtualClient.sendCommand(CommandFactory.AcceptCommand(virtualClient.getClientID()));
             serverStorage.notifyClients();
-            return CommandFactory.AcceptCommand(clientID);
+            return null;//CommandFactory.AcceptCommand(clientID);
         }
         else {
             // Cannot add player to the game, return a refuse command

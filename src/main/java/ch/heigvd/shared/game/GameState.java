@@ -79,7 +79,7 @@ public class GameState implements Serializable {
         if(column >= 7 || column < 0)
             return isValidMove;
 
-        for(int i = 0; i <= 6; ++i){
+        for(int i = 0; i < 6; ++i){
             if(game[i][column] == emptyCase){
                 game[i][column] = playerToPlay.equals(player) ? player_1 : player_2;
                 isValidMove = true;
@@ -87,5 +87,10 @@ public class GameState implements Serializable {
         }
 
         return isValidMove;
+    }
+
+    public boolean gameWin(){
+
+        return false;
     }
 }
