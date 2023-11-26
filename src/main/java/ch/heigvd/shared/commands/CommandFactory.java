@@ -12,12 +12,16 @@ public class CommandFactory {
         return new Command(CommandType.Join, new JoinCommandData());
     }
 
-    public static Command AcceptCommand(GameState gameState) {
-        return new Command(CommandType.Accept, new AcceptCommandData(gameState));
+    public static Command AcceptCommand() {
+        return new Command(CommandType.Accept, new AcceptCommandData());
     }
 
-    public static Command RefuseCommand() {
-        return new Command(CommandType.Refuse, new RefuseCommandData());
+    public static Command RefuseCommand(String message) {
+        return new Command(CommandType.Refuse, new RefuseCommandData(message));
+    }
+
+    public static Command UpdateCommand(GameState gameState) {
+        return new Command(CommandType.Update, new UpdateCommandData(gameState));
     }
 
     public static Command PlaceCommand() {

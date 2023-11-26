@@ -2,5 +2,5 @@ package ch.heigvd.shared.commands.data;
 
 import java.io.Serializable;
 
-public class QuitCommandData implements Serializable {
+public record QuitCommandData() implements Serializable {
 }

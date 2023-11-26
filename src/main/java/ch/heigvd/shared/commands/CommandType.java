@@ -5,6 +5,7 @@ public enum CommandType {
     Join,
     Accept,
     Refuse,
+    Update,
     Place,
     FF,
     Quit

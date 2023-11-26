@@ -1,5 +1,6 @@
 package ch.heigvd.server.commands;
 
+import ch.heigvd.server.data.ServerStorage;
 import ch.heigvd.shared.abstractions.VirtualClient;
 import ch.heigvd.shared.commands.Command;
 import ch.heigvd.shared.commands.CommandFactory;
@@ -10,8 +11,8 @@ import java.util.UUID;
 
 public class ServerCommandsHandler {
 
-    private static final GameState gameState = new GameState();
     private final VirtualClient virtualClient;
+    private final ServerStorage serverStorage = ServerStorage.getInstance();
 
     public ServerCommandsHandler(VirtualClient virtualClient) {
         this.virtualClient = virtualClient;
@@ -27,21 +28,35 @@ public class ServerCommandsHandler {
                 default -> CommandFactory.InvalidCommand("This command type is not supported by the server");
             };
 
-            virtualClient.sendCommand(outputCommand);
+            if(outputCommand != null)
+                virtualClient.sendCommand(outputCommand);
         }
         catch (ClassCastException ex) {
             virtualClient.sendCommand(CommandFactory.InvalidCommand("The server was unable to deserialize the command data"));
         }
     }
 
-    private Command HandleJoinCommand(JoinCommandData data) {
-        if(gameState.CanAddPlayer()) {
+    private synchronized Command HandleJoinCommand(JoinCommandData data) {
+        GameState gameState = serverStorage.getGameState();
+        if(gameState.canAddPlayer()) {
+
+            // Generate the new client ID
             String clientID = UUID.randomUUID().toString();
             virtualClient.setClientID(clientID);
-            return CommandFactory.AcceptCommand(gameState);
+
+            // Subscribe the client to server events
+            serverStorage.subscribeClient(virtualClient);
+
+            // Add player to the game
+            gameState.addPlayer(clientID);
+
+            // Finally notify the clients and return an accept command
+            serverStorage.notifyClients();
+            return CommandFactory.AcceptCommand();
         }
         else {
-            return CommandFactory.RefuseCommand();
+            // Cannot add player to the game, return a refuse command
+            return CommandFactory.RefuseCommand("Cannot join the game, the game is full");
         }
     }
 
@@ -54,6 +69,8 @@ public class ServerCommandsHandler {
     }
 
     private Command HandleQuitCommand(QuitCommandData data) {
-        return null;
+        serverStorage.unsubscribeClient(virtualClient);
+        serverStorage.getGameState().removePlayer(virtualClient.getClientID());
+        return CommandFactory.AcceptCommand();
     }
 }

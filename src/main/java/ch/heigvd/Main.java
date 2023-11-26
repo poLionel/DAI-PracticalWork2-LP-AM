@@ -3,6 +3,7 @@ package ch.heigvd;
 import ch.heigvd.client.net.GameClient;
 import ch.heigvd.server.net.ClientHandler;
 import ch.heigvd.server.net.GameServer;
+import ch.heigvd.shared.logs.Logger;
 
 public class Main {
     public static void main(String[] args) {
