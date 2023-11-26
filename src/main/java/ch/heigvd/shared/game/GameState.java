@@ -89,8 +89,78 @@ public class GameState implements Serializable {
         return isValidMove;
     }
 
-    public boolean gameWin(){
+    /**
+     * Checks if the game is win.
+     *
+     * @return true if someone win the game.
+     */
+    public boolean isGameWin(){
+        boolean isGameWin = false;
+        for(int i = game.length-1; i >= 0; --i){
+            for(int j = game[i].length-1; j >= 0; --j){
+                if(j > 2 && !isGameWin){
+                    isGameWin = horizontalCheck(i,j);
+                }
+                if(i > 2 && !isGameWin){
+                    isGameWin = verticalCheck(i, j);
+                }
+                if(i > 2 && j < 4 && !isGameWin){
+                    isGameWin = diagonalRightCheck(i, j);
+                }
+                if(j >= 3 && i >= 3 && !isGameWin){
+                    isGameWin = diagonalLeftCheck(i, j);
+                }
+            }
+        }
 
-        return false;
+        return isGameWin;
+    }
+
+    /**
+     * Checks if there's four in a row horizontally.
+     *
+     * @param x the position in the x-axis.
+     * @param y the position in the y-axis.
+     * @return true if there's a 4 in a row.
+     */
+    private boolean horizontalCheck(int x, int y){
+        return game[x][y] == game[x][y - 1] && game[x][y] == game[x][y - 2] &&
+                game[x][y] == game[x][y - 3];
+    }
+
+    /**
+     * Checks if there's four in a row vertically.
+     *
+     * @param x the position in the x-axis.
+     * @param y the position in the y-axis.
+     * @return true if there's a 4 in a row.
+     */
+    private boolean verticalCheck(int x, int y){
+        return game[x][y] == game[x - 1][y] && game[x][y] == game[x - 2][y] &&
+                game[x][y] == game[x - 3][y];
+    }
+
+    /**
+     * Checks if there's four in a row diagonally.
+     *
+     * @param x the position in the x-axis.
+     * @param y the position in the y-axis.
+     * @return true if there's a 4 in a row.
+     */
+    private boolean diagonalRightCheck(int x, int y){
+        return game[x][y] == game[x-1][y + 1] && game[x][y] == game[x-2][y + 2] &&
+                game[x][y] == game[x-3][y + 3];
+    }
+
+    /**
+     * Checks if there's four in a row diagonally.
+     *
+     * @param x the position in the x-axis.
+     * @param y the position in the y-axis.
+     * @return true if there's a 4 in a row.
+     */
+    private boolean diagonalLeftCheck(int x, int y){
+        return game[x][y] == game[x-1][y - 1] && game[x][y] == game[x-2][y - 2] &&
+                game[x][y] == game[x-3][y - 3];
     }
 }
