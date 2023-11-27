@@ -14,14 +14,12 @@ public class PicocliServerCommand implements Runnable{
     public boolean executeServer(){
         try{
             GameServer server = new GameServer();
-            Thread serverThread = new Thread(server::start);
-
-            serverThread.start();
+            server.start();
 
             return true;
 
         }catch (Exception e){
-            //todo something
+            e.printStackTrace();
             return false;
         }
 

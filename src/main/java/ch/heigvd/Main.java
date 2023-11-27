@@ -13,8 +13,6 @@ public class Main {
         //int exitCode = new CommandLine(new AppBaseCommand()).execute(args);
         //System.exit(exitCode);
 
-        //Todo separate client and server
-
         try {
             Logger.setEnabled();
             GameServer server = new GameServer();

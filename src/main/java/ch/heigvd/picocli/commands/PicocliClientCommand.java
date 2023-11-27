@@ -14,16 +14,13 @@ public class PicocliClientCommand implements Runnable{
     public boolean executeClient(){
         try{
             GameClient client = new GameClient("127.0.0.1");
-            Thread clientThread = new Thread(client::start);
 
-            clientThread.start();
-
-            clientThread.join();
+            client.start();
 
             return true;
 
         }catch (Exception e){
-            //todo something
+            e.printStackTrace();
             return false;
         }
     }
