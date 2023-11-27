@@ -47,6 +47,7 @@ public class ClientCommandsHandler {
 
     private Command HandleAcceptCommand(AcceptCommandData data) {
         // The accept command contains our client ID
+        Logger.log(String.format("Recieved client ID %s", data.clientID()), this, LogLevel.Information);
         virtualClient.setClientID(data.clientID());
         return null;
     }
@@ -58,13 +59,11 @@ public class ClientCommandsHandler {
 
     private Command HandleUpdateCommand(UpdateCommandData data) {
         gameState = data.gameState();
+        gameUI.displayGameState(gameState);
         if(gameState.canPlay(virtualClient.getClientID()))
         {
-            Logger.log("Le joueur peut jouer", LogLevel.Information);
-
             System.out.println(virtualClient.getClientID());
             int input = gameUI.getInput();
-
             //Checks if FF
             if(input == 1515)
                 return CommandFactory.FFCommand(); //todo reset gameGrid

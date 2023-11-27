@@ -70,6 +70,8 @@ public class ClientHandler implements Runnable, VirtualClient {
     public boolean sendCommand(Command command) {
         try {
             out.writeObject(command);
+            out.flush();
+            out.reset();
             Logger.log(String.format("Command sent : %s", command.type), this, LogLevel.Information);
             return true;
         }

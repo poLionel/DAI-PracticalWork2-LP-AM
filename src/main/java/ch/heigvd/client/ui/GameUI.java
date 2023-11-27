@@ -48,25 +48,21 @@ public class GameUI {
             System.out.println(player.ID);
         }
 
-        gameState.draw();
         if(gameState.isGameWin()){
             System.out.println("The game is over. The winner is " + gameState.playerWhoPlayed);
             System.out.println("The game is starting again...");
         }
 
-        /**
-        char[][] test = gameState.getGameGrid();
-        System.out.println("-------------------> " + test[5][3]);
-        if(gameState.getGameGrid() != null){
-            for(char[] row : gameState.getGameGrid()){
+        char[][] gameGrid = gameState.getGameGrid();
+        System.out.println("-------------------> " + gameGrid[5][3]);
+        if(gameGrid != null){
+            for(char[] row : gameGrid){
                 for(char column : row){
                     System.out.print("|" + column + "|");
                 }
                 System.out.println();
             }
         }
-         */
-
     }
 
     /**
@@ -76,7 +72,7 @@ public class GameUI {
      */
     public int getInput(){
 
-        System.out.println("Entrez la position où vous voulez jouer (ou bien FF = 1515): ");
+        System.out.println("Enter the position you want to play [1-7] or enter 'FF' to quit ");
         boolean correctInput = false;
         int input = -1;
         while(!correctInput){
@@ -84,7 +80,7 @@ public class GameUI {
                 input = Integer.parseInt(scanner.nextLine());
                 correctInput = true;
             }catch(NumberFormatException e) {
-                System.out.println("Saisie incorrect... Veuillez réessayer");
+                System.out.println("The position you entered is not valid. Please try again");
             }
         }
 

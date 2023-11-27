@@ -91,7 +91,6 @@ public class ServerCommandsHandler {
      */
     private Command HandlePlaceCommand(PlaceCommandData data) {
         boolean isValidMove = serverStorage.getGameState().validPosition(data.position(), virtualClient.getClientID());
-        serverStorage.getGameState().draw();
 
         serverStorage.notifyClients();
         return isValidMove ? null : CommandFactory.RefuseCommand("Invalid Position");

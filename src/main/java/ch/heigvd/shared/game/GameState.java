@@ -1,7 +1,5 @@
 package ch.heigvd.shared.game;
 
-import ch.heigvd.shared.abstractions.VirtualClient;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +14,7 @@ public class GameState implements Serializable {
     public static final int MAX_PLAYER_COUNT = 2;
 
     /** A list of the player. */
-    private final List<PlayerState> players = Collections.synchronizedList(new ArrayList<>());
+    private final List<PlayerState> players = new ArrayList<>();
 
     /** The grid of the game. */
     private char[][] gameGrid = new char[6][7];
@@ -27,13 +25,13 @@ public class GameState implements Serializable {
     private int turn = 0;
 
     /**The display of the token for the player 1 */
-    private final char player_1 = 'X';
+    private final char PLAYER_1 = 'X';
 
     /** The display of the token for the player 2 */
-    private final char player_2 = 'O';
+    private final char PLAYER_2 = 'O';
 
     /** THe display of an empty case. */
-    private final char emptyCase = '\u0000';
+    private static final char EMPTY_CASE = '\u0000';
 
     /**
      * Adds a player to the array of player.
@@ -145,8 +143,8 @@ public class GameState implements Serializable {
             return isValidMove;
 
         for(int i = 5; i >= 0; --i){
-            if(gameGrid[i][column] == emptyCase){
-                gameGrid[i][column] = turn % 2 == 0 ? 'X' : '0';
+            if(gameGrid[i][column] == EMPTY_CASE){
+                gameGrid[i][column] = turn % 2 == 0 ? PLAYER_1 : PLAYER_2;
                 isValidMove = true;
                 playerWhoPlayed = player;
                 i = 0;
@@ -171,6 +169,7 @@ public class GameState implements Serializable {
         boolean isGameWin = false;
         for(int i = gameGrid.length-1; i >= 0; --i){
             for(int j = gameGrid[i].length-1; j >= 0; --j){
+                if(gameGrid[i][j] == this.EMPTY_CASE) continue;
                 if(j > 2 && !isGameWin){
                     isGameWin = horizontalCheck(i,j);
                 }
@@ -198,7 +197,7 @@ public class GameState implements Serializable {
      */
     private boolean horizontalCheck(int x, int y){
         return gameGrid[x][y] == gameGrid[x][y - 1] && gameGrid[x][y] == gameGrid[x][y - 2] &&
-                gameGrid[x][y] == gameGrid[x][y - 3];
+                gameGrid[x][y] == gameGrid[x][y - 3] ;
     }
 
     /**
@@ -251,19 +250,5 @@ public class GameState implements Serializable {
      */
     public void resetGameGrid(){
         gameGrid = new char[6][7];
-    }
-
-    /**
-     * Todo delete that
-     */
-    public void draw(){
-        if(gameGrid != null){
-            for(char[] row : gameGrid){
-                for(char column : row){
-                    System.out.print("|" + column + "|");
-                }
-                System.out.println();
-            }
-        }
     }
 }
