@@ -37,6 +37,7 @@ public class ClientCommandsHandler {
                 virtualClient.sendCommand(outputCommand);
         }
         catch (ClassCastException ex) {
+            //todo
         }
     }
 
@@ -59,9 +60,16 @@ public class ClientCommandsHandler {
         gameState = data.gameState();
         if(gameState.canPlay(virtualClient.getClientID()))
         {
-            int position = gameUI.getPosition();
             Logger.log("Le joueur peut jouer", LogLevel.Information);
-            return CommandFactory.PlaceCommand(position);
+
+            System.out.println(virtualClient.getClientID());
+            int input = gameUI.getInput();
+
+            //Checks if FF
+            if(input == 1515)
+                return CommandFactory.FFCommand(); //todo reset gameGrid
+
+            return CommandFactory.PlaceCommand(input);
         }
 
         return null;

@@ -4,12 +4,13 @@ import java.io.Serializable;
 
 public class PlayerState implements Serializable {
     public String ID;
-    public char pawn;
+    public static int nbPlayer = 0;
+    public int playerNb;
 
     public PlayerState(String ID) {
         this.ID = ID;
+        playerNb = nbPlayer;
+        ++nbPlayer;
     }
-
-    public PlayerState(String ID, char pawn){this.ID = ID; this.pawn = pawn;};
 
 }

@@ -1,5 +1,6 @@
 package ch.heigvd.shared.commands;
 
+import ch.heigvd.server.data.ServerStorage;
 import ch.heigvd.shared.commands.data.*;
 import ch.heigvd.shared.game.GameState;
 
@@ -35,4 +36,5 @@ public class CommandFactory {
     public static Command QuitCommand() {
         return new Command(CommandType.Quit, new QuitCommandData());
     }
+
 }

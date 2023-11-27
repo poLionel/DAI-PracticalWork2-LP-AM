@@ -5,11 +5,13 @@ import ch.heigvd.shared.commands.CommandFactory;
 import ch.heigvd.shared.game.GameState;
 import ch.heigvd.shared.game.PlayerState;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ServerStorage {
+
+public class ServerStorage implements Serializable {
     private static ServerStorage instance = null;
     private final GameState game = new GameState();
     private final List<VirtualClient> clients = Collections.synchronizedList(new ArrayList<>());

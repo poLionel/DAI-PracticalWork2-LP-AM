@@ -14,6 +14,7 @@ import java.net.Socket;
 
 public class GameClient implements VirtualClient {
     public static final int DEFAULT_PORT = 5187;
+
     private final int port;
     private final String address;
     private boolean askedForClosing;

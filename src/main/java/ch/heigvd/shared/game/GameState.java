@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Represents the rules of the game.
+ * Represents the rules and the logics of the game.
  */
 public class GameState implements Serializable {
 
@@ -19,10 +19,12 @@ public class GameState implements Serializable {
     private final List<PlayerState> players = Collections.synchronizedList(new ArrayList<>());
 
     /** The grid of the game. */
-    private final char[][] game = new char[6][7];
+    private char[][] gameGrid = new char[6][7];
 
     /** the player that has to play.*/
-    private String playerToPlay;
+    public String playerWhoPlayed;
+
+    private int turn = 0;
 
     /**The display of the token for the player 1 */
     private final char player_1 = 'X';
@@ -31,7 +33,7 @@ public class GameState implements Serializable {
     private final char player_2 = 'O';
 
     /** THe display of an empty case. */
-    private final char emptyCase = ' ';
+    private final char emptyCase = '\u0000';
 
     /**
      * Adds a player to the array of player.
@@ -44,7 +46,7 @@ public class GameState implements Serializable {
         boolean canAddPlayer = canAddPlayer();
         if(canAddPlayer) {
             players.add(new PlayerState(ID));
-            playerToPlay = ID;
+            playerWhoPlayed = ID;
         }
         return canAddPlayer;
     }
@@ -126,10 +128,7 @@ public class GameState implements Serializable {
      * @return true if the player can play.
      */
     public synchronized boolean canPlay(String ID){
-        if(ID != null && players.size() == 2 && ID.equals(playerToPlay))
-            return true;
-
-        return false;
+        return ID != null && players.size() == 2 && !ID.equals(playerWhoPlayed);
     }
 
     /**
@@ -145,14 +144,22 @@ public class GameState implements Serializable {
         if(column >= 7 || column < 0)
             return isValidMove;
 
-        for(int i = 0; i < 6; ++i){
-            if(game[i][column] == emptyCase){
-                game[i][column] = playerToPlay.equals(player) ? player_1 : player_2;
+        for(int i = 5; i >= 0; --i){
+            if(gameGrid[i][column] == emptyCase){
+                gameGrid[i][column] = turn % 2 == 0 ? 'X' : '0';
                 isValidMove = true;
+                playerWhoPlayed = player;
+                i = 0;
+                ++turn;
             }
         }
 
         return isValidMove;
+    }
+
+    public synchronized void place(GameState gameState){
+        gameState.getGameGrid();
+
     }
 
     /**
@@ -162,8 +169,8 @@ public class GameState implements Serializable {
      */
     public boolean isGameWin(){
         boolean isGameWin = false;
-        for(int i = game.length-1; i >= 0; --i){
-            for(int j = game[i].length-1; j >= 0; --j){
+        for(int i = gameGrid.length-1; i >= 0; --i){
+            for(int j = gameGrid[i].length-1; j >= 0; --j){
                 if(j > 2 && !isGameWin){
                     isGameWin = horizontalCheck(i,j);
                 }
@@ -190,8 +197,8 @@ public class GameState implements Serializable {
      * @return true if there's a 4 in a row.
      */
     private boolean horizontalCheck(int x, int y){
-        return game[x][y] == game[x][y - 1] && game[x][y] == game[x][y - 2] &&
-                game[x][y] == game[x][y - 3];
+        return gameGrid[x][y] == gameGrid[x][y - 1] && gameGrid[x][y] == gameGrid[x][y - 2] &&
+                gameGrid[x][y] == gameGrid[x][y - 3];
     }
 
     /**
@@ -202,8 +209,8 @@ public class GameState implements Serializable {
      * @return true if there's a 4 in a row.
      */
     private boolean verticalCheck(int x, int y){
-        return game[x][y] == game[x - 1][y] && game[x][y] == game[x - 2][y] &&
-                game[x][y] == game[x - 3][y];
+        return gameGrid[x][y] == gameGrid[x - 1][y] && gameGrid[x][y] == gameGrid[x - 2][y] &&
+                gameGrid[x][y] == gameGrid[x - 3][y];
     }
 
     /**
@@ -214,8 +221,8 @@ public class GameState implements Serializable {
      * @return true if there's a 4 in a row.
      */
     private boolean diagonalRightCheck(int x, int y){
-        return game[x][y] == game[x-1][y + 1] && game[x][y] == game[x-2][y + 2] &&
-                game[x][y] == game[x-3][y + 3];
+        return gameGrid[x][y] == gameGrid[x-1][y + 1] && gameGrid[x][y] == gameGrid[x-2][y + 2] &&
+                gameGrid[x][y] == gameGrid[x-3][y + 3];
     }
 
     /**
@@ -226,7 +233,37 @@ public class GameState implements Serializable {
      * @return true if there's a 4 in a row.
      */
     private boolean diagonalLeftCheck(int x, int y){
-        return game[x][y] == game[x-1][y - 1] && game[x][y] == game[x-2][y - 2] &&
-                game[x][y] == game[x-3][y - 3];
+        return gameGrid[x][y] == gameGrid[x-1][y - 1] && gameGrid[x][y] == gameGrid[x-2][y - 2] &&
+                gameGrid[x][y] == gameGrid[x-3][y - 3];
+    }
+
+    /**
+     * Get the grid of the game.
+     *
+     * @return a 2D array of char representing the grid.
+     */
+    public char[][] getGameGrid(){
+        return this.gameGrid;
+    }
+
+    /**
+     * Reset the grid.
+     */
+    public void resetGameGrid(){
+        gameGrid = new char[6][7];
+    }
+
+    /**
+     * Todo delete that
+     */
+    public void draw(){
+        if(gameGrid != null){
+            for(char[] row : gameGrid){
+                for(char column : row){
+                    System.out.print("|" + column + "|");
+                }
+                System.out.println();
+            }
+        }
     }
 }
