@@ -19,6 +19,7 @@ public class ClientHandler implements Runnable, VirtualClient {
     private ObjectInputStream in = null;
     private ObjectOutputStream out = null;
     private String clientID;
+    private boolean running = true;
 
     public ClientHandler(Socket socket) {
         this.socket = socket;
@@ -37,7 +38,7 @@ public class ClientHandler implements Runnable, VirtualClient {
             this.out = out;
             this.in = in;
 
-            while (true) {
+            while (running) {
                 try {
                     // Waiting for input message
                     Command inputCommand = (Command)in.readObject();
@@ -47,23 +48,36 @@ public class ClientHandler implements Runnable, VirtualClient {
                     commandHandler.handle(inputCommand);
                 }
                 catch (ClassNotFoundException ex) {
-                    // Log error and notify the client
+                    // Log error, notify and disconnect the client as we cannot continue
                     Logger.log(String.format("Error while deserializing object : %s", ex.getMessage()), this, LogLevel.Error);
                     sendCommand(CommandFactory.InvalidCommand("Server was unable to deserialize the input data"));
+                    handleException();
                 }
                 catch (Exception ex) {
-                    // Log error and notify the client
+                    // Log error and disconnect the client as we cannot continue
                     Logger.log(String.format("Unhandled exception : %s", ex.getMessage()), this, LogLevel.Error);
-                    sendCommand(CommandFactory.InvalidCommand("The server encountered an internal error"));
+                    handleException();
                 }
             }
         }
         catch (IOException ex) {
+            // Log error and disconnect the client as we cannot continue
             Logger.log(String.format("A socket error occurred : %s", ex.getMessage()), this, LogLevel.Error);
+            handleException();
         }
         catch (Exception ex) {
+            // Log error and disconnect the client as we cannot continue
             Logger.log(String.format("An unexpected error occurred : %s", ex.getMessage()), this, LogLevel.Error);
+            handleException();
         }
+        finally {
+            Logger.log(String.format("Connexion closed with : %s", socket.getInetAddress()), this, LogLevel.Information);
+        }
+    }
+
+    private void handleException() {
+        commandHandler.handle(CommandFactory.QuitCommand());
+        running = false;
     }
 
     @Override

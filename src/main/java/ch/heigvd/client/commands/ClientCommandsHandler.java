@@ -14,7 +14,6 @@ import ch.heigvd.shared.logs.Logger;
 
 public class ClientCommandsHandler {
 
-    private static GameState gameState;
     private final VirtualClient virtualClient;
     private final GameUI gameUI = GameUI.getInstance();
 
@@ -25,16 +24,18 @@ public class ClientCommandsHandler {
     public void handle(Command command) {
 
         try {
-            Command outputCommand = switch (command.type) {
-                case Accept -> HandleAcceptCommand((AcceptCommandData)command.value);
-                case Refuse -> HandleRefuseCommand((RefuseCommandData)command.value);
-                case InvalidCommand -> HandleInvalidCommand((InvalidCommandData)command.value);
-                case Update -> HandleUpdateCommand((UpdateCommandData)command.value);
-                default -> null;
+            switch (command.type) {
+                case Accept: HandleAcceptCommand((AcceptCommandData)command.value);
+                    break;
+                case Refuse: HandleRefuseCommand((RefuseCommandData)command.value);
+                    break;
+                case InvalidCommand: HandleInvalidCommand((InvalidCommandData)command.value);
+                    break;
+                case Update: HandleUpdateCommand((UpdateCommandData)command.value);
+                    break;
+                default: // If we received wrong command from the server ignore
+                    break;
             };
-
-            if(outputCommand != null)
-                virtualClient.sendCommand(outputCommand);
         }
         catch (ClassCastException ex) {
             //todo
@@ -45,37 +46,37 @@ public class ClientCommandsHandler {
         virtualClient.sendCommand(CommandFactory.JoinCommand());
     }
 
-    private Command HandleAcceptCommand(AcceptCommandData data) {
+    private void HandleAcceptCommand(AcceptCommandData data) {
         // The accept command contains our client ID
         Logger.log(String.format("Recieved client ID %s", data.clientID()), this, LogLevel.Information);
         virtualClient.setClientID(data.clientID());
-        return null;
     }
 
-    private Command HandleRefuseCommand(RefuseCommandData data) {
+    private void HandleRefuseCommand(RefuseCommandData data) {
         Logger.log(data.message(), LogLevel.Warning);
-        return null;
+        gameUI.displayMessage(data.message());
     }
 
-    private Command HandleUpdateCommand(UpdateCommandData data) {
-        gameState = data.gameState();
-        gameUI.displayGameState(gameState);
-        if(gameState.canPlay(virtualClient.getClientID()))
-        {
-            System.out.println(virtualClient.getClientID());
-            int input = gameUI.getInput();
+    private void HandleUpdateCommand(UpdateCommandData data) {
+
+        GameState gameState = data.gameState();
+        String clientID = virtualClient.getClientID();
+        gameUI.displayGameState(gameState, clientID);
+
+        if(gameState.canPlay(clientID)) {
+
+            int input = gameUI.getInput(gameState, clientID);
+
             //Checks if FF
             if(input == 1515)
-                return CommandFactory.FFCommand(); //todo reset gameGrid
-
-            return CommandFactory.PlaceCommand(input);
+                virtualClient.sendCommand(CommandFactory.FFCommand());
+            else
+                virtualClient.sendCommand(CommandFactory.PlaceCommand(input));
         }
-
-        return null;
     }
 
-    private Command HandleInvalidCommand(InvalidCommandData data) {
+    private void HandleInvalidCommand(InvalidCommandData data) {
         Logger.log(data.message(), LogLevel.Error);
-        return null;
+        gameUI.displayMessage(data.message());
     }
 }

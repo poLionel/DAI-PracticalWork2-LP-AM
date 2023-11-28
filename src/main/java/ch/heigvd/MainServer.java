@@ -11,7 +11,6 @@ public class MainServer {
             Logger.setEnabled();
             GameServer server = new GameServer();
             server.start();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
