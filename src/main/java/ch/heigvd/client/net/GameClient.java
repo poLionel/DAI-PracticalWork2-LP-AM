@@ -1,6 +1,7 @@
 package ch.heigvd.client.net;
 
 import ch.heigvd.client.commands.ClientCommandsHandler;
+import ch.heigvd.shared.abstractions.VirtualClient;
 import ch.heigvd.shared.abstractions.VirtualEndpoint;
 import ch.heigvd.shared.commands.Command;
 import ch.heigvd.shared.logs.LogLevel;
@@ -11,8 +12,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-public class GameClient implements VirtualEndpoint {
+public class GameClient implements VirtualClient {
     public static final int DEFAULT_PORT = 5187;
+
     private final int port;
     private final String address;
     private boolean askedForClosing;
@@ -52,6 +54,7 @@ public class GameClient implements VirtualEndpoint {
 
                     // Waiting for input message
                     Command inputCommand = (Command) in.readObject();
+
                     Logger.log(String.format("Command recieved : %s", inputCommand.type), this, LogLevel.Information);
 
                     // Handle the input command
@@ -86,6 +89,8 @@ public class GameClient implements VirtualEndpoint {
     public boolean sendCommand(Command command) {
         try {
             out.writeObject(command);
+            out.flush();
+            out.reset();
             Logger.log(String.format("Command sent : %s", command.type), this, LogLevel.Information);
             return true;
         }
@@ -93,5 +98,15 @@ public class GameClient implements VirtualEndpoint {
             Logger.log(String.format("Unable to send command : %s", ex.getMessage()), this, LogLevel.Error);
             return false;
         }
+    }
+
+    @Override
+    public String getClientID() {
+        return this.clientID;
+    }
+
+    @Override
+    public void setClientID(String clientID) {
+        this.clientID = clientID;
     }
 }

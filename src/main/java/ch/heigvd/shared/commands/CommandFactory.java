@@ -1,5 +1,6 @@
 package ch.heigvd.shared.commands;
 
+import ch.heigvd.server.data.ServerStorage;
 import ch.heigvd.shared.commands.data.*;
 import ch.heigvd.shared.game.GameState;
 
@@ -12,8 +13,8 @@ public class CommandFactory {
         return new Command(CommandType.Join, new JoinCommandData());
     }
 
-    public static Command AcceptCommand() {
-        return new Command(CommandType.Accept, new AcceptCommandData());
+    public static Command AcceptCommand(String clientID) {
+        return new Command(CommandType.Accept, new AcceptCommandData(clientID));
     }
 
     public static Command RefuseCommand(String message) {
@@ -24,8 +25,8 @@ public class CommandFactory {
         return new Command(CommandType.Update, new UpdateCommandData(gameState));
     }
 
-    public static Command PlaceCommand() {
-        return new Command(CommandType.Place, new PlaceCommandData());
+    public static Command PlaceCommand(int position) {
+        return new Command(CommandType.Place, new PlaceCommandData(position));
     }
 
     public static Command FFCommand() {
@@ -35,4 +36,5 @@ public class CommandFactory {
     public static Command QuitCommand() {
         return new Command(CommandType.Quit, new QuitCommandData());
     }
+
 }

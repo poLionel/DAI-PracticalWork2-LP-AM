@@ -9,15 +9,33 @@ import ch.heigvd.shared.game.GameState;
 
 import java.util.UUID;
 
+/**
+ * Class that handles the server commands.
+ */
 public class ServerCommandsHandler {
 
+    /**
+     * The client that has sent the command.
+     */
     private final VirtualClient virtualClient;
+
+    /**
+     * An object that contains information about the game and the players.
+     */
     private final ServerStorage serverStorage = ServerStorage.getInstance();
 
+    /**
+     * Constructor
+     */
     public ServerCommandsHandler(VirtualClient virtualClient) {
         this.virtualClient = virtualClient;
     }
 
+    /**
+     * Todo
+     *
+     * @param command
+     */
     public void handle(Command command) {
         try {
             Command outputCommand = switch (command.type) {
@@ -36,6 +54,11 @@ public class ServerCommandsHandler {
         }
     }
 
+    /**
+     * todo
+     * @param data
+     * @return
+     */
     private synchronized Command HandleJoinCommand(JoinCommandData data) {
         GameState gameState = serverStorage.getGameState();
         if(gameState.canAddPlayer()) {
@@ -51,8 +74,9 @@ public class ServerCommandsHandler {
             gameState.addPlayer(clientID);
 
             // Finally notify the clients and return an accept command
+            virtualClient.sendCommand(CommandFactory.AcceptCommand(virtualClient.getClientID()));
             serverStorage.notifyClients();
-            return CommandFactory.AcceptCommand();
+            return null;
         }
         else {
             // Cannot add player to the game, return a refuse command
@@ -60,17 +84,33 @@ public class ServerCommandsHandler {
         }
     }
 
+    /**
+     * todo
+     * @param data
+     * @return
+     */
     private Command HandlePlaceCommand(PlaceCommandData data) {
-        return null;
+        boolean isValidMove = serverStorage.getGameState().validPosition(data.position(), virtualClient.getClientID());
+
+        serverStorage.notifyClients();
+        return isValidMove ? null : CommandFactory.RefuseCommand("Invalid Position");
     }
 
     private Command HandleFFCommand(FFCommandData data) {
+        serverStorage.getGameState().resetGameGrid();
+        System.out.println("A player has FF, game restart");
         return null;
     }
 
+    /**
+     * Todo
+     * @param data
+     * @return
+     */
     private Command HandleQuitCommand(QuitCommandData data) {
+        String clientID = virtualClient.getClientID();
         serverStorage.unsubscribeClient(virtualClient);
-        serverStorage.getGameState().removePlayer(virtualClient.getClientID());
-        return CommandFactory.AcceptCommand();
+        serverStorage.getGameState().removePlayer(clientID);
+        return CommandFactory.AcceptCommand(clientID);
     }
 }

@@ -1,7 +1,7 @@
 package ch.heigvd.client.commands;
 
 import ch.heigvd.client.ui.GameUI;
-import ch.heigvd.shared.abstractions.VirtualEndpoint;
+import ch.heigvd.shared.abstractions.VirtualClient;
 import ch.heigvd.shared.commands.Command;
 import ch.heigvd.shared.commands.CommandFactory;
 import ch.heigvd.shared.commands.data.AcceptCommandData;
@@ -15,11 +15,11 @@ import ch.heigvd.shared.logs.Logger;
 public class ClientCommandsHandler {
 
     private static GameState gameState;
-    private final VirtualEndpoint virtualEndpoint;
+    private final VirtualClient virtualClient;
     private final GameUI gameUI = GameUI.getInstance();
 
-    public ClientCommandsHandler(VirtualEndpoint virtualEndpoint) {
-        this.virtualEndpoint = virtualEndpoint;
+    public ClientCommandsHandler(VirtualClient virtualClient) {
+        this.virtualClient = virtualClient;
     }
 
     public void handle(Command command) {
@@ -34,17 +34,21 @@ public class ClientCommandsHandler {
             };
 
             if(outputCommand != null)
-                virtualEndpoint.sendCommand(outputCommand);
+                virtualClient.sendCommand(outputCommand);
         }
         catch (ClassCastException ex) {
+            //todo
         }
     }
 
     public void sendInitialCommand() {
-        virtualEndpoint.sendCommand(CommandFactory.JoinCommand());
+        virtualClient.sendCommand(CommandFactory.JoinCommand());
     }
 
     private Command HandleAcceptCommand(AcceptCommandData data) {
+        // The accept command contains our client ID
+        Logger.log(String.format("Recieved client ID %s", data.clientID()), this, LogLevel.Information);
+        virtualClient.setClientID(data.clientID());
         return null;
     }
 
@@ -54,7 +58,19 @@ public class ClientCommandsHandler {
     }
 
     private Command HandleUpdateCommand(UpdateCommandData data) {
-        gameUI.displayGameState(data.gameState());
+        gameState = data.gameState();
+        gameUI.displayGameState(gameState);
+        if(gameState.canPlay(virtualClient.getClientID()))
+        {
+            System.out.println(virtualClient.getClientID());
+            int input = gameUI.getInput();
+            //Checks if FF
+            if(input == 1515)
+                return CommandFactory.FFCommand(); //todo reset gameGrid
+
+            return CommandFactory.PlaceCommand(input);
+        }
+
         return null;
     }
 
