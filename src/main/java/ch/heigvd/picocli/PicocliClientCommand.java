@@ -1,4 +1,4 @@
-package ch.heigvd.picocli.commands;
+package ch.heigvd.picocli;
 
 import ch.heigvd.client.net.GameClient;
 import picocli.CommandLine;
@@ -14,13 +14,10 @@ public class PicocliClientCommand implements Runnable{
     public boolean executeClient(){
         try{
             GameClient client = new GameClient("127.0.0.1");
-
             client.start();
-
             return true;
-
         }catch (Exception e){
-            e.printStackTrace();
+            System.out.println(e.getMessage());
             return false;
         }
     }
