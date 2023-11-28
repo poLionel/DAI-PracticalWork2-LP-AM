@@ -121,14 +121,19 @@ public class GameUI {
      */
     public int getInput(GameState gameState, String clientID){
 
-        System.out.printf("Enter the position you want to play [%s-%s] or enter 'FF' to quit ", GameState.GRID_START_INDEX, GameState.GRID_START_INDEX + GameState.GRID_WIDTH );
+        System.out.printf("Enter the position you want to play [%s-%s] or enter 'FF' to quit ", GameState.GRID_START_INDEX, GameState.GRID_START_INDEX + GameState.GRID_WIDTH - 1);
         System.out.println();
         boolean correctInput = false;
         int input = -1;
         while(!correctInput){
             try{
                 input = Integer.parseInt(scanner.nextLine());
-                correctInput = gameState.canPlace(input, clientID);
+                if(!gameState.canPlace(input, clientID)) {
+                    System.out.println("You cannot place at this position");
+                }
+                else {
+                    correctInput = true;
+                }
             }catch(NumberFormatException e) {
                 System.out.println("The position you entered is not valid. Please try again");
             }

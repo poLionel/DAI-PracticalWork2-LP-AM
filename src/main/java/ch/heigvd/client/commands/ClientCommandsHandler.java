@@ -12,15 +12,34 @@ import ch.heigvd.shared.game.GameState;
 import ch.heigvd.shared.logs.LogLevel;
 import ch.heigvd.shared.logs.Logger;
 
+
+/**
+ * Class that handles the command received from the server
+ */
 public class ClientCommandsHandler {
 
+    /**
+     * The associated client
+     */
     private final VirtualClient virtualClient;
+
+    /**
+     * The ui object to use for output
+     */
     private final GameUI gameUI = GameUI.getInstance();
 
+    /**
+     * Constructor
+     */
     public ClientCommandsHandler(VirtualClient virtualClient) {
         this.virtualClient = virtualClient;
     }
 
+    /**
+     * Handle and perform action following the given command
+     *
+     * @param command command to treat
+     */
     public void handle(Command command) {
 
         try {
@@ -38,10 +57,13 @@ public class ClientCommandsHandler {
             };
         }
         catch (ClassCastException ex) {
-            //todo
+            // If we received wrong command from the server ignore
         }
     }
 
+    /**
+     * Send the initial command to the server
+     */
     public void sendInitialCommand() {
         virtualClient.sendCommand(CommandFactory.JoinCommand());
     }
