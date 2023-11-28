@@ -1,7 +1,6 @@
 package ch.heigvd.client.ui;
 
 import ch.heigvd.shared.game.GameState;
-import ch.heigvd.shared.game.PlayerState;
 
 import java.util.Scanner;
 
@@ -9,15 +8,23 @@ import java.util.Scanner;
  * User interface of a game.
  */
 public class GameUI {
-    /**
-     * todo
-     */
+
     private static GameUI instance = null;
 
     /**
      * A scanner used to get the input of the client.
      */
     private final Scanner scanner = new Scanner(System.in);
+
+    /**
+     * A char array that correspond to the pawn display character
+     */
+    private static final char[] PAWNS =  {' ', 'X', 'O' };
+
+    /**
+     * Indicates if the game was previously started
+     */
+    private boolean wasStarted = false;
 
     /**
      * Constructor
@@ -42,27 +49,69 @@ public class GameUI {
      *
      * @param gameState the game to be displayed.
      */
-    public void displayGameState(GameState gameState) {
-        PlayerState[] players = gameState.getPlayers();
-        for (PlayerState player : players) {
-            System.out.println(player.ID);
+    public void displayGameState(GameState gameState, String clientID) {
+
+
+        if(gameState.waitingForPlayers()) {
+            if(wasStarted)
+                displayDisconnectedMessage();
+
+            displayWaitingPlayerMessage();
+            wasStarted = false;
+            return;
         }
 
-        if(gameState.isGameWin()){
-            System.out.println("The game is over. The winner is " + gameState.playerWhoPlayed);
-            System.out.println("The game is starting again...");
+        wasStarted = true;
+
+        displayGrid(gameState.getGameGrid());
+
+        String winnerID = gameState.getGameWinner();
+        if(winnerID != null) {
+            if(winnerID.equals(clientID)) displayWinMessage();
+            else displayLooseMessage();
+            displayRestartMessage();
+            return;
         }
 
-        char[][] gameGrid = gameState.getGameGrid();
-        System.out.println("-------------------> " + gameGrid[5][3]);
-        if(gameGrid != null){
-            for(char[] row : gameGrid){
-                for(char column : row){
-                    System.out.print("|" + column + "|");
-                }
-                System.out.println();
-            }
+        if(gameState.canPlay(clientID)) {
+            displayYourTurnMessage();
         }
+        else {
+            displayNotTurnMessage();
+        }
+    }
+
+    public void displayMessage(String message) {
+        System.out.println(message);
+    }
+
+    public void displayWinMessage() {
+        System.out.println("You won this game !");
+    }
+
+    public void displayLooseMessage() {
+        System.out.println("You lost this game...");
+    }
+
+    public void displayYourTurnMessage() {
+        System.out.println("It's your turn to play !");
+    }
+
+    public void displayNotTurnMessage() {
+        System.out.println("It's the other player turn");
+    }
+
+    public void displayRestartMessage() {
+        System.out.println("The game will soon restart");
+    }
+
+    public void displayWaitingPlayerMessage() {
+        System.out.println("Waiting for other player to join");
+    }
+
+    public void displayDisconnectedMessage() {
+        System.out.println("A player has disconnected");
+        displayRestartMessage();
     }
 
     /**
@@ -70,20 +119,41 @@ public class GameUI {
      *
      * @return the user input.
      */
-    public int getInput(){
+    public int getInput(GameState gameState, String clientID){
 
-        System.out.println("Enter the position you want to play [1-7] or enter 'FF' to quit ");
+        System.out.printf("Enter the position you want to play [%s-%s] or enter 'FF' to quit ", GameState.GRID_START_INDEX, GameState.GRID_START_INDEX + GameState.GRID_WIDTH );
+        System.out.println();
         boolean correctInput = false;
         int input = -1;
         while(!correctInput){
             try{
                 input = Integer.parseInt(scanner.nextLine());
-                correctInput = true;
+                correctInput = gameState.canPlace(input, clientID);
             }catch(NumberFormatException e) {
                 System.out.println("The position you entered is not valid. Please try again");
             }
         }
 
         return input;
+    }
+
+    private void displayGrid(int[][] grid) {
+        if(grid != null){
+
+            // Display grid content
+            for(int y =  GameState.GRID_HEIGHT - 1; y >= 0; --y) {
+                for (int x = 0; x < GameState.GRID_WIDTH; ++x) {
+                    System.out.print("|" + PAWNS[grid[x][y] - GameState.EMPTY_SQUARE_INDEX]);
+                }
+                System.out.println("|");
+            }
+
+            // Display column indexes
+            for(int x = 0; x < GameState.GRID_WIDTH; ++x) {
+                System.out.printf(" %d", x + GameState.GRID_START_INDEX);
+            }
+
+            System.out.println();
+        }
     }
 }
