@@ -128,7 +128,12 @@ public class GameUI {
         while(!correctInput){
             try{
                 input = Integer.parseInt(scanner.nextLine());
-                correctInput = gameState.canPlace(input, clientID);
+                if(!gameState.canPlace(input, clientID)) {
+                    System.out.println("You cannot place at this position");
+                }
+                else {
+                    correctInput = true;
+                }
             }catch(NumberFormatException e) {
                 System.out.println("The position you entered is not valid. Please try again");
             }

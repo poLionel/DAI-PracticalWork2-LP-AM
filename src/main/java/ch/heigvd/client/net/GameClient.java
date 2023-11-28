@@ -72,9 +72,11 @@ public class GameClient implements VirtualClient {
         }
         catch (IOException ex) {
             Logger.log(String.format("Handled error : %s", ex.getMessage()), this, LogLevel.Error);
+            System.out.printf("An error occured : %s", ex.getMessage());
         }
         catch (Exception ex) {
             Logger.log(String.format("An unexpected error occurred : %s", ex.getMessage()), this, LogLevel.Error);
+            System.out.printf("An error occured : %s", ex.getMessage());
         }
         finally {
             askedForClosing = false;
