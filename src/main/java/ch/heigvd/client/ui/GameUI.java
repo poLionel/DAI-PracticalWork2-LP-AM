@@ -121,7 +121,7 @@ public class GameUI {
      */
     public int getInput(GameState gameState, String clientID){
 
-        System.out.printf("Enter the position you want to play [%s-%s] or enter 'FF' to quit ", GameState.GRID_START_INDEX, GameState.GRID_START_INDEX + GameState.GRID_WIDTH );
+        System.out.printf("Enter the position you want to play [%s-%s] or enter 'FF' to quit ", GameState.GRID_START_INDEX, GameState.GRID_START_INDEX + GameState.GRID_WIDTH - 1);
         System.out.println();
         boolean correctInput = false;
         int input = -1;
