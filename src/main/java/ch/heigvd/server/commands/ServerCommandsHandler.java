@@ -9,13 +9,14 @@ import ch.heigvd.shared.game.GameState;
 
 import java.util.UUID;
 
+
 /**
- * Class that handles the server commands.
+ * Class that handles the command received from the client
  */
 public class ServerCommandsHandler {
 
     /**
-     * The client that has sent the command.
+     * The associated client
      */
     private final VirtualClient virtualClient;
 
@@ -32,9 +33,9 @@ public class ServerCommandsHandler {
     }
 
     /**
-     * Todo
+     * Handle and perform action following the given command
      *
-     * @param command
+     * @param command command to treat
      */
     public void handle(Command command) {
         try {

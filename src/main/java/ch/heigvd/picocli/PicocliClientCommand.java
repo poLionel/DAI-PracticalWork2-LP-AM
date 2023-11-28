@@ -4,7 +4,7 @@ import ch.heigvd.client.net.GameClient;
 import ch.heigvd.server.net.GameServer;
 import picocli.CommandLine;
 
-@CommandLine.Command(name = "Client", version = "client 0.1", mixinStandardHelpOptions = true)
+@CommandLine.Command(name = "client", version = "client 0.1", mixinStandardHelpOptions = true)
 public class PicocliClientCommand implements Runnable{
 
     @CommandLine.Option(names = {"-p", "--port"}, description = "The port of the server", required = false)
