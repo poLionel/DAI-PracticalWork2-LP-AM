@@ -38,28 +38,25 @@ public class ServerCommandsHandler {
      */
     public void handle(Command command) {
         try {
-            Command outputCommand = switch (command.type) {
-                case Join -> HandleJoinCommand((JoinCommandData) command.value);
-                case Place -> HandlePlaceCommand((PlaceCommandData) command.value);
-                case FF -> HandleFFCommand((FFCommandData) command.value);
-                case Quit -> HandleQuitCommand((QuitCommandData) command.value);
-                default -> CommandFactory.InvalidCommand("This command type is not supported by the server");
+            switch (command.type) {
+                case Join: HandleJoinCommand((JoinCommandData) command.value);
+                    break;
+                case Place: HandlePlaceCommand((PlaceCommandData) command.value);
+                    break;
+                case FF: HandleFFCommand((FFCommandData) command.value);
+                    break;
+                case Quit: HandleQuitCommand((QuitCommandData) command.value);
+                    break;
+                default : virtualClient.sendCommand(CommandFactory.InvalidCommand("This command type is not supported by the server"));
+                    break;
             };
-
-            if(outputCommand != null)
-                virtualClient.sendCommand(outputCommand);
         }
         catch (ClassCastException ex) {
             virtualClient.sendCommand(CommandFactory.InvalidCommand("The server was unable to deserialize the command data"));
         }
     }
 
-    /**
-     * todo
-     * @param data
-     * @return
-     */
-    private synchronized Command HandleJoinCommand(JoinCommandData data) {
+    private void HandleJoinCommand(JoinCommandData data) {
         GameState gameState = serverStorage.getGameState();
         if(gameState.canAddPlayer()) {
 
@@ -73,45 +70,58 @@ public class ServerCommandsHandler {
             // Add player to the game
             gameState.addPlayer(clientID);
 
-            // Finally notify the clients and return an accept command
+            // Finally accept the join and notify every client
             virtualClient.sendCommand(CommandFactory.AcceptCommand(virtualClient.getClientID()));
             serverStorage.notifyClients();
-            return null;
         }
         else {
             // Cannot add player to the game, return a refuse command
-            return CommandFactory.RefuseCommand("Cannot join the game, the game is full");
+            virtualClient.sendCommand(CommandFactory.RefuseCommand("Cannot join the game, the game is full"));
         }
     }
 
-    /**
-     * todo
-     * @param data
-     * @return
-     */
-    private Command HandlePlaceCommand(PlaceCommandData data) {
-        boolean isValidMove = serverStorage.getGameState().validPosition(data.position(), virtualClient.getClientID());
-        serverStorage.getGameState().draw();
+    private void HandlePlaceCommand(PlaceCommandData data) {
 
+        GameState gameState = serverStorage.getGameState();
+        String clientID = virtualClient.getClientID();
+        boolean canPlace = gameState.canPlace(data.position(), clientID);
+
+        // Verify if the player is allowed to play
+        if(!canPlace) {
+            virtualClient.sendCommand(CommandFactory.RefuseCommand("You cannot place a pawn here"));
+            return;
+        }
+
+        int placePosition = data.position();
+        boolean isValidMove = gameState.canPlace(placePosition, clientID);
+
+        // Verify if the move is valid
+        if(!isValidMove) {
+            virtualClient.sendCommand((CommandFactory.RefuseCommand("The position given is not valid.")));
+            return;
+        }
+
+        // Place the pawn and notify every client
+        gameState.place(placePosition, clientID);
         serverStorage.notifyClients();
-        return isValidMove ? null : CommandFactory.RefuseCommand("Invalid Position");
+
+        // If someone won the game restart
+        if(gameState.getGameWinner() != null) {
+            gameState.restartGame();
+            serverStorage.notifyClients();
+        }
     }
 
-    private Command HandleFFCommand(FFCommandData data) {
-        serverStorage.getGameState().resetGameGrid();
+    private void HandleFFCommand(FFCommandData data) {
+        serverStorage.getGameState().restartGame();
         System.out.println("A player has FF, game restart");
-        return null;
     }
 
-    /**
-     * Todo
-     * @param data
-     * @return
-     */
-    private Command HandleQuitCommand(QuitCommandData data) {
+    private void HandleQuitCommand(QuitCommandData data) {
         String clientID = virtualClient.getClientID();
         serverStorage.unsubscribeClient(virtualClient);
         serverStorage.getGameState().removePlayer(clientID);
-        return CommandFactory.AcceptCommand(clientID);
+        serverStorage.getGameState().restartGame();
+        serverStorage.notifyClients();
     }
 }

@@ -54,6 +54,7 @@ public class GameClient implements VirtualClient {
 
                     // Waiting for input message
                     Command inputCommand = (Command) in.readObject();
+
                     Logger.log(String.format("Command recieved : %s", inputCommand.type), this, LogLevel.Information);
 
                     // Handle the input command
@@ -88,6 +89,8 @@ public class GameClient implements VirtualClient {
     public boolean sendCommand(Command command) {
         try {
             out.writeObject(command);
+            out.flush();
+            out.reset();
             Logger.log(String.format("Command sent : %s", command.type), this, LogLevel.Information);
             return true;
         }

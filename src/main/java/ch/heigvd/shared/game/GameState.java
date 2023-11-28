@@ -1,7 +1,5 @@
 package ch.heigvd.shared.game;
 
-import ch.heigvd.shared.abstractions.VirtualClient;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,27 +11,31 @@ import java.util.List;
 public class GameState implements Serializable {
 
     /** The maximum player in the game. */
-    public static final int MAX_PLAYER_COUNT = 2;
+    public static final int PLAYER_COUNT = 2;
+
+    /** The game grid width. */
+    public static final int GRID_WIDTH = 7;
+
+    /** The game grid height. */
+    public static final int GRID_HEIGHT = 6;
+
+    /** The first grid rows and column index. */
+    public static final int GRID_START_INDEX = 1;
+
+    /** The game line size required to win */
+    public static final int WIN_ROW_SIZE = 4;
+
+    /** The index that indicates that a square is empty */
+    public static final int EMPTY_SQUARE_INDEX = -1;
 
     /** A list of the player. */
     private final List<PlayerState> players = Collections.synchronizedList(new ArrayList<>());
 
     /** The grid of the game. */
-    private char[][] gameGrid = new char[6][7];
+    private int[][] gameGrid;
 
     /** the player that has to play.*/
-    public String playerWhoPlayed;
-
-    private int turn = 0;
-
-    /**The display of the token for the player 1 */
-    private final char player_1 = 'X';
-
-    /** The display of the token for the player 2 */
-    private final char player_2 = 'O';
-
-    /** THe display of an empty case. */
-    private final char emptyCase = '\u0000';
+    public int playerIndexToPlay;
 
     /**
      * Adds a player to the array of player.
@@ -46,7 +48,6 @@ public class GameState implements Serializable {
         boolean canAddPlayer = canAddPlayer();
         if(canAddPlayer) {
             players.add(new PlayerState(ID));
-            playerWhoPlayed = ID;
         }
         return canAddPlayer;
     }
@@ -69,15 +70,19 @@ public class GameState implements Serializable {
         return false;
     }
 
-    /**
-     * Gets the players connected to the game.
-     *
-     * @return an array of the players.
-     */
-    public PlayerState[] getPlayers() {
-        PlayerState[] copy = new PlayerState[players.size()];
-        players.toArray(copy);
-        return copy;
+    public synchronized boolean place(int column, String playerID){
+        if(!canPlace(column, playerID))
+            return false;
+
+        for(int i = 0; i < GRID_HEIGHT; ++i) {
+            if(gameGrid[column - GRID_START_INDEX][i] == EMPTY_SQUARE_INDEX) {
+                gameGrid[column - GRID_START_INDEX][i] = getPlayerIndex(playerID);
+                playerIndexToPlay = (playerIndexToPlay + 1) % PLAYER_COUNT;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -86,7 +91,7 @@ public class GameState implements Serializable {
      * @return true if the game can add a player.
      */
     public boolean canAddPlayer() {
-        return players.size() < MAX_PLAYER_COUNT;
+        return players.size() < PLAYER_COUNT;
     }
 
     /**
@@ -98,37 +103,14 @@ public class GameState implements Serializable {
         return !players.isEmpty();
     }
 
-    /**
-     * todo
-     *
-     * @param playerID
-     * @return
-     */
-    public boolean containsPlayer(String playerID) {
-        return getPlayerWithID(playerID) != null;
-    }
-
-    /**
-     * todo
-     *
-     * @param ID
-     * @return
-     */
-    private synchronized PlayerState getPlayerWithID(String ID) {
-        if(ID == null) return null;
-        for (PlayerState player : players)
-            if(player.ID.equals(ID)) return player;
-        return null;
-    }
-
-    /**
+    /*
      * Checks if the player can play.
      *
      * @param ID the ID of the player.
      * @return true if the player can play.
      */
-    public synchronized boolean canPlay(String ID){
-        return ID != null && players.size() == 2 && !ID.equals(playerWhoPlayed);
+    public boolean canPlay(String ID){
+        return players.size() == PLAYER_COUNT && getPlayerIndex(ID) == playerIndexToPlay;
     }
 
     /**
@@ -138,55 +120,82 @@ public class GameState implements Serializable {
      * @param player the player
      * @return true if the move is valid.
      */
-    public synchronized boolean validPosition(int column, String player){
-        boolean isValidMove = false;
+    public boolean canPlace(int column, String player){
 
-        if(column >= 7 || column < 0)
-            return isValidMove;
+        if(column >= GRID_WIDTH + GRID_START_INDEX || column < GRID_START_INDEX)
+            return false;
 
-        for(int i = 5; i >= 0; --i){
-            if(gameGrid[i][column] == emptyCase){
-                gameGrid[i][column] = turn % 2 == 0 ? 'X' : '0';
-                isValidMove = true;
-                playerWhoPlayed = player;
-                i = 0;
-                ++turn;
-            }
-        }
+        if(!canPlay(player))
+            return false;
 
-        return isValidMove;
+        return gameGrid[column - GRID_START_INDEX][GRID_HEIGHT - 1] == EMPTY_SQUARE_INDEX;
     }
 
-    public synchronized void place(GameState gameState){
-        gameState.getGameGrid();
-
+    /**
+     * Indicates if the game is waiting for player to join
+     *
+     * @return a boolean that indicates if the game is waiting for player to join
+     */
+    public boolean waitingForPlayers() {
+        return players.size() != PLAYER_COUNT;
     }
 
     /**
      * Checks if the game is win.
      *
-     * @return true if someone win the game.
+     * @return the ID of the winner or null if there's no winner
      */
-    public boolean isGameWin(){
+    public String getGameWinner(){
         boolean isGameWin = false;
         for(int i = gameGrid.length-1; i >= 0; --i){
             for(int j = gameGrid[i].length-1; j >= 0; --j){
-                if(j > 2 && !isGameWin){
+                if(gameGrid[i][j] == EMPTY_SQUARE_INDEX) continue;
+                if(j > WIN_ROW_SIZE / 2){
                     isGameWin = horizontalCheck(i,j);
                 }
-                if(i > 2 && !isGameWin){
+                if(i > WIN_ROW_SIZE / 2){
                     isGameWin = verticalCheck(i, j);
                 }
-                if(i > 2 && j < 4 && !isGameWin){
+                if(i > WIN_ROW_SIZE / 2 && j < GRID_HEIGHT - WIN_ROW_SIZE / 2){
                     isGameWin = diagonalRightCheck(i, j);
                 }
-                if(j >= 3 && i >= 3 && !isGameWin){
+                if(j >= WIN_ROW_SIZE / 2 && i >= GRID_WIDTH - WIN_ROW_SIZE / 2){
                     isGameWin = diagonalLeftCheck(i, j);
                 }
+
+                if(isGameWin) return players.get(gameGrid[i][j]).ID;
             }
         }
 
-        return isGameWin;
+        return null;
+    }
+
+    /**
+     * Retrieve the player with the given ID
+     *
+     * @param ID of the player
+     * @return Corresponding player
+     */
+    public PlayerState getPlayerWithID(String ID) {
+        int index = getPlayerIndex(ID);
+        if(index == -1) return null;
+        else return players.get(index);
+    }
+
+    /**
+     * Retrieve the player index in the players collection
+     *
+     * @param ID of the player
+     * @return index of the player in the players collection
+     */
+    public int getPlayerIndex(String ID) {
+        if(ID == null) return -1;
+
+        int size = players.size();
+        for (int i = 0; i < size; ++i)
+            if(players.get(i).ID.equals(ID)) return i;
+
+        return -1;
     }
 
     /**
@@ -198,7 +207,7 @@ public class GameState implements Serializable {
      */
     private boolean horizontalCheck(int x, int y){
         return gameGrid[x][y] == gameGrid[x][y - 1] && gameGrid[x][y] == gameGrid[x][y - 2] &&
-                gameGrid[x][y] == gameGrid[x][y - 3];
+                gameGrid[x][y] == gameGrid[x][y - 3] ;
     }
 
     /**
@@ -242,28 +251,20 @@ public class GameState implements Serializable {
      *
      * @return a 2D array of char representing the grid.
      */
-    public char[][] getGameGrid(){
+    public int[][] getGameGrid(){
         return this.gameGrid;
     }
 
     /**
-     * Reset the grid.
+     * Restart the game
      */
-    public void resetGameGrid(){
-        gameGrid = new char[6][7];
-    }
+    public void restartGame(){
+        gameGrid = new int[GRID_WIDTH][GRID_HEIGHT];
 
-    /**
-     * Todo delete that
-     */
-    public void draw(){
-        if(gameGrid != null){
-            for(char[] row : gameGrid){
-                for(char column : row){
-                    System.out.print("|" + column + "|");
-                }
-                System.out.println();
-            }
-        }
+        for(int x = 0; x < GRID_WIDTH; ++x)
+            for(int y = 0; y < GRID_HEIGHT; ++y)
+                gameGrid[x][y] = EMPTY_SQUARE_INDEX;
+
+        playerIndexToPlay = 0;
     }
 }
